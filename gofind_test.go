@@ -1,17 +1,18 @@
 package main_test
 
 import (
+	"os"
 	"os/exec"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 )
 
 var _ = Describe("GoFind", func() {
 	var (
+		cmdErr  error
 		cmd     *exec.Cmd
 		session *gexec.Session
 	)
@@ -22,11 +23,10 @@ var _ = Describe("GoFind", func() {
 	})
 
 	It("should run the binary", func() {
-		var err error
-		session, err = gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
+		session, cmdErr = gexec.Start(cmd, os.Stdout, os.Stderr)
+		Expect(cmdErr).NotTo(HaveOccurred())
+		Eventually(session).Should(gexec.Exit(0))
 
-		// Expect(session.ExitCode()).To(Equal(0))
-		Eventually(session).Should(gbytes.Say("cf-redis-broker"))
+		Eventually(session.Out).Should(gbytes.Say("cf-redis-broker"))
 	})
 })
